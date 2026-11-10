@@ -6,18 +6,16 @@ from datetime import datetime, timezone
 def get_location():
     try:
         result = subprocess.run(
-            [
-                "termux-location",
-                "-p", "gps",
-                "-r", "once"
-            ],
+            ["termux-location", "-p", "gps", "-r", "once"],
             capture_output=True,
             text=True,
             timeout=40
         )
 
         if result.returncode != 0:
-            raise RuntimeError(result.stderr.strip() or "GPS command failed")
+            raise RuntimeError(
+                result.stderr.strip() or "GPS command failed"
+            )
 
         data = json.loads(result.stdout)
 
@@ -25,10 +23,10 @@ def get_location():
         longitude = float(data["longitude"])
         accuracy = float(data.get("accuracy", 0))
 
-        if not (-90 <= latitude <= 90):
+        if not -90 <= latitude <= 90:
             raise ValueError("Invalid latitude")
 
-        if not (-180 <= longitude <= 180):
+        if not -180 <= longitude <= 180:
             raise ValueError("Invalid longitude")
 
         return {
@@ -42,8 +40,4 @@ def get_location():
         raise RuntimeError("GPS timeout")
 
     except (ValueError, KeyError, json.JSONDecodeError) as error:
-        raise RuntimeError(f"Invalid GPS response: {error}")
-
-
-if __name__ == "__main__":
-    print(get_location())
+        raise RuntimeError(f"GPS response error: {error}")
