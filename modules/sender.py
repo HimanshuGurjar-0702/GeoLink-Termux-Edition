@@ -121,22 +121,14 @@ def run():
 
     session = requests.Session()
 
-    try:
-        response = session.get(
-            receiver_url + "/health",
-            timeout=15
-        )
-        response.raise_for_status()
-
-        if response.json().get("service") != "GeoLink":
-            print("Invalid GeoLink receiver.")
-            return
-
+        try:
+        health = session.get(receiver_url + "/health", timeout=10)
+        health.raise_for_status()
     except requests.RequestException as error:
         print("Receiver unavailable:", error)
         return
 
-        token = load_session(receiver_url)
+    token = load_session(receiver_url)
 
     if token:
         try:
