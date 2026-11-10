@@ -1,15 +1,9 @@
-
 import json
 import subprocess
 from datetime import datetime, timezone
 
 
 def get_location():
-    """
-    Read the current device's GPS location
-    using Termux:API.
-    """
-
     try:
         result = subprocess.run(
             [
@@ -23,14 +17,13 @@ def get_location():
         )
 
         if result.returncode != 0:
-            raise RuntimeError(
-                result.stderr.strip() or "GPS request failed"
-            )
+            raise RuntimeError(result.stderr.strip() or "GPS command failed")
 
-        location = json.loads(result.stdout)
+        data = json.loads(result.stdout)
 
-        latitude = float(location["latitude"])
-        longitude = float(location["longitude"])
+        latitude = float(data["latitude"])
+        longitude = float(data["longitude"])
+        accuracy = float(data.get("accuracy", 0))
 
         if not (-90 <= latitude <= 90):
             raise ValueError("Invalid latitude")
@@ -41,43 +34,16 @@ def get_location():
         return {
             "latitude": latitude,
             "longitude": longitude,
-            "accuracy": location.get("accuracy"),
-            "provider": location.get("provider", "gps"),
-            "timestamp": datetime.now(
-                timezone.utc
-            ).isoformat()
+            "accuracy": accuracy,
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
-    except FileNotFoundError:
-        raise RuntimeError(
-            "Termux:API command not found. "
-            "Install Termux:API and its package."
-        )
-
     except subprocess.TimeoutExpired:
-        raise RuntimeError(
-            "GPS timeout. Check location services."
-        )
+        raise RuntimeError("GPS timeout")
 
-    except (json.JSONDecodeError, KeyError, ValueError):
-        raise RuntimeError(
-            "Invalid GPS response. Check GPS permission."
-        )
+    except (ValueError, KeyError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"Invalid GPS response: {error}")
 
 
 if __name__ == "__main__":
-    print("\nGeoLink GPS Test")
-    print("----------------")
-
-    try:
-        data = get_location()
-
-        print("GPS Status: Connected")
-        print("Latitude:", data["latitude"])
-        print("Longitude:", data["longitude"])
-        print("Accuracy:", data["accuracy"])
-        print("Provider:", data["provider"])
-        print("Timestamp:", data["timestamp"])
-
-    except RuntimeError as error:
-        print("\nGPS Error:", error)
+    print(get_location())
