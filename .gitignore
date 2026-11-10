@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+.env
+*.log
+*.token
+*.secret
+
+# Private sender credentials and location history
+data/*
+!data/.gitkeep
