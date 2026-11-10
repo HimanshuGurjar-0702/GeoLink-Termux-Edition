@@ -1,22 +1,12 @@
 import importlib
 
-VERSION = "1.0.0"
-
-
-def launch_module(module_name):
-    try:
-        module = importlib.import_module(module_name)
-        module.run()
-    except ImportError as error:
-        print(f"\nModule error: {error}")
-    except KeyboardInterrupt:
-        print("\nGeoLink stopped.")
+VERSION = "2.0.0"
 
 
 def main():
     while True:
         print("\n================================")
-        print("       GeoLink v" + VERSION)
+        print(f"       GeoLink v{VERSION}")
         print("================================")
         print("1. Start Sender")
         print("2. Start Receiver")
@@ -25,14 +15,25 @@ def main():
         choice = input("\nSelect option: ").strip()
 
         if choice == "1":
-            launch_module("modules.sender")
+            module_name = "modules.sender"
         elif choice == "2":
-            launch_module("modules.receiver")
+            module_name = "modules.receiver"
         elif choice == "3":
-            print("Goodbye!")
+            print("GeoLink closed.")
             break
         else:
             print("Invalid option.")
+            continue
+
+        try:
+            module = importlib.import_module(module_name)
+            module.run()
+        except KeyboardInterrupt:
+            print("\nOperation stopped.")
+        except Exception as error:
+            print(f"\nError: {error}")
+
+        input("\nPress Enter to return to menu...")
 
 
 if __name__ == "__main__":
