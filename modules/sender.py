@@ -136,11 +136,27 @@ def run():
         print("Receiver unavailable:", error)
         return
 
-    token = load_session(receiver_url)
+        token = load_session(receiver_url)
 
     if token:
-        print("Saved pairing session found.")
-    else:
+        try:
+            check = session.get(
+                receiver_url + "/control",
+                headers={"Authorization": "Bearer " + token},
+                timeout=10
+            )
+
+            if check.status_code == 401:
+                token = None
+            else:
+                check.raise_for_status()
+                print("Saved pairing session verified.")
+
+        except requests.RequestException as error:
+            print("Could not verify saved session:", error)
+            return
+
+    if not token:
         try:
             token = pair_receiver(session, receiver_url)
             print("Pairing successful.")
